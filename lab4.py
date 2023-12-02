@@ -217,34 +217,35 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     plt.savefig(filename)
     plt.close(fig)
 def autocorrelacion(data, variable, t1, t2):
-    # Asegúrate de que 'dt' es un datetime
+    """
+    Calcula la autocorrelación para dos horas específicas t1 y t2 para la secuencia aleatoria M(t).
+    """
+    # Convertir 'dt' a datetime si aún no lo es
     if not pd.api.types.is_datetime64_any_dtype(data['dt']):
         data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
-    
-    # Asegúrate de que el índice es de tipo 'datetime64[ns]'
+
+    # Establecer 'dt' como índice si aún no lo es
     if not pd.api.types.is_datetime64_any_dtype(data.index):
-        data.set_index('dt', inplace=True)
+        data = data.set_index('dt')
 
     # Filtrar los datos por las dos horas específicas
-    data_t1 = data[data.index.hour == t1][variable].dropna()
-    data_t2 = data[data.index.hour == t2][variable].dropna()
-    
-    # Asegúrate de que hay datos suficientes para calcular la autocorrelación
-    if data_t1.empty or data_t2.empty:
-        return np.nan  # Retornar NaN si no hay datos suficientes
-    
-    # Reindexar los dataframes para alinearlos por fecha
-    data_t1.index = data_t1.index.date
-    data_t2.index = data_t2.index.date
-    
-    # Alineación por fecha y eliminación de fechas sin pareja
-    common_dates = list(set(data_t1.index).intersection(set(data_t2.index)))
-    data_t1 = data_t1.reindex(common_dates)
-    data_t2 = data_t2.reindex(common_dates)
-    
+    data_t1 = data[data.index.hour == t1][variable]
+    data_t2 = data[data.index.hour == t2][variable]
+
+    # Agrupar por fecha y calcular la media
+    data_t1_mean = data_t1.groupby(data_t1.index.date).mean()
+    data_t2_mean = data_t2.groupby(data_t2.index.date).mean()
+
+    # Intersección de fechas para obtener fechas comunes
+    common_dates = data_t1_mean.index.intersection(data_t2_mean.index)
+
+    # Seleccionar datos en fechas comunes
+    data_t1_aligned = data_t1_mean.loc[common_dates]
+    data_t2_aligned = data_t2_mean.loc[common_dates]
+
     # Calcular la autocorrelación si hay pares suficientes
-    if len(data_t1) > 0 and len(data_t2) > 0:
-        return np.corrcoef(data_t1, data_t2)[0, 1]
+    if not data_t1_aligned.empty and not data_t2_aligned.empty:
+        return np.corrcoef(data_t1_aligned, data_t2_aligned)[0, 1]
     else:
         return np.nan  # Retornar NaN si no hay pares suficientes
 
