@@ -216,17 +216,11 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     filename = f"{carpeta}/grafica3d_{variable}_loc{loc}.png"
     plt.savefig(filename)
     plt.close(fig)
+
 def autocorrelacion(data, variable, t1, t2):
     """
     Calcula la autocorrelación para dos horas específicas t1 y t2 para la secuencia aleatoria M(t).
     """
-    # Convertir 'dt' a datetime si aún no lo es
-    if not pd.api.types.is_datetime64_any_dtype(data['dt']):
-        data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
-
-    # Establecer 'dt' como índice si aún no lo es
-    if not pd.api.types.is_datetime64_any_dtype(data.index):
-        data = data.set_index('dt')
 
     # Filtrar los datos por las dos horas específicas
     data_t1 = data[data.index.hour == t1][variable]
@@ -248,7 +242,123 @@ def autocorrelacion(data, variable, t1, t2):
         return np.corrcoef(data_t1_aligned, data_t2_aligned)[0, 1]
     else:
         return np.nan  # Retornar NaN si no hay pares suficientes
+def autocovarianza(data, variable, t1, t2):
+    """
+    Calcula la autocovarianza para dos horas específicas t1 y t2 para la secuencia aleatoria M(t).
+    """
 
+    # Filtrar los datos por las dos horas específicas
+    data_t1 = data[data.index.hour == t1][variable]
+    data_t2 = data[data.index.hour == t2][variable]
+
+    # Agrupar por fecha y calcular la media
+    data_t1_mean = data_t1.groupby(data_t1.index.date).mean()
+    data_t2_mean = data_t2.groupby(data_t2.index.date).mean()
+
+    # Intersección de fechas para obtener fechas comunes
+    common_dates = data_t1_mean.index.intersection(data_t2_mean.index)
+
+    # Seleccionar datos en fechas comunes
+    data_t1_aligned = data_t1_mean.loc[common_dates]
+    data_t2_aligned = data_t2_mean.loc[common_dates]
+
+    # Calcular la autocovarianza si hay pares suficientes
+    if not data_t1_aligned.empty and not data_t2_aligned.empty:
+        covariance = np.mean((data_t1_aligned - data_t1_aligned.mean()) * (data_t2_aligned - data_t2_aligned.mean()))
+        return covariance
+    else:
+        return np.nan  # Retornar NaN si no hay pares suficientes
+
+def wss(data, variable, datetime_col, threshold=0.05):
+    """
+    Determina si la secuencia aleatoria M(t) es estacionaria en sentido amplio.
+
+    :param data: DataFrame de Pandas que contiene la secuencia aleatoria M(t).
+    :param variable: Nombre de la columna en 'data' que contiene los valores de M(t).
+    :param datetime_col: Nombre de la columna en 'data' que contiene las fechas y horas.
+    :param threshold: Umbral para la variación aceptable en media y autocorrelación/autocovarianza.
+    :return: True si la secuencia es estacionaria en sentido amplio, False en caso contrario.
+    """
+   # Convertir 'dt' a datetime y establecerlo como índice si aún no lo es
+    if not pd.api.types.is_datetime64_any_dtype(data.index):
+        data[datetime_col] = pd.to_datetime(data[datetime_col])
+        data.set_index(datetime_col, inplace=True)
+
+
+    # Calcula la media para diferentes horas
+    hourly_means = data.groupby(data.index.hour)[variable].mean()
+    
+    # Verificar si la media cambia más del 5%
+    mean_stationary = np.all(np.abs(hourly_means - hourly_means.mean()) / hourly_means.mean() <= threshold)
+
+    # Calcular y verificar la autocorrelación/autocovarianza para diferentes horas
+    hours = data.index.hour.unique()
+    autocorr_changes = []
+    for i in range(len(hours)):
+        for j in range(i+1, len(hours)):
+            t1, t2 = hours[i], hours[j]
+            autocorr_value = autocorrelacion(data, variable, t1, t2)
+            autocov_value = autocovarianza(data, variable, t1, t2)
+            autocorr_changes.append((autocorr_value, autocov_value))
+
+    # Verificar si la autocorrelación y autocovarianza cambian más del 5%
+    autocorr_stationary = all(
+        np.abs(val - np.nanmean([x[0] for x in autocorr_changes])) / np.nanmean([x[0] for x in autocorr_changes]) <= threshold
+        and
+        np.abs(val - np.nanmean([x[1] for x in autocorr_changes])) / np.nanmean([x[1] for x in autocorr_changes]) <= threshold
+        for val in [x[0] for x in autocorr_changes] + [x[1] for x in autocorr_changes]
+    )
+
+    return mean_stationary and autocorr_stationary
+
+def prom_temporal(data, variable, inicio=None, fin=None):
+    """
+    Calcula la media temporal A[m(t)] para una función muestra m(t) de la secuencia aleatoria M(t).
+
+    :param data: DataFrame de Pandas que contiene la función muestra m(t).
+    :param variable: Nombre de la columna en 'data' que representa la variable de interés.
+    :param inicio: Fecha y hora de inicio del intervalo para el promedio temporal en formato AAAAMMDDHH.
+    :param fin: Fecha y hora de fin del intervalo para el promedio temporal en formato AAAAMMDDHH.
+    :return: Media temporal de la variable seleccionada.
+    """
+    # Asegurarse de que el índice es de tipo datetime
+    if not pd.api.types.is_datetime64_any_dtype(data.index):
+        raise ValueError("El índice del DataFrame debe ser de tipo datetime.")
+
+    # Filtrar datos si se proporcionan fechas de inicio y fin
+    if inicio:
+        inicio = pd.to_datetime(inicio, format='%Y%m%d%H')
+        data = data[data.index >= inicio]
+    if fin:
+        fin = pd.to_datetime(fin, format='%Y%m%d%H')
+        data = data[data.index <= fin]
+
+    return data[variable].mean()
+def ergodicidad(data, variable, margen_tolerancia=0.05):
+    """
+    Determina si la secuencia aleatoria M(t) es ergódica.
+
+    :param data: DataFrame de Pandas que contiene la secuencia aleatoria M(t).
+    :param variable: Nombre de la columna en 'data' que representa la variable de interés.
+    :param margen_tolerancia: Margen de tolerancia para la comparación de medias (por defecto 5%).
+    :return: True si la secuencia es ergódica, False en caso contrario.
+    """
+    # Calcular la media del conjunto
+    media_conjunto = data[variable].mean()
+
+    # Calcular la media temporal para cada función muestra
+    medias_temporales = data.groupby(data.index.date)[variable].mean()
+
+    # Verificar si cada media temporal está dentro del margen de tolerancia con respecto a la media del conjunto
+    es_ergodica = all(abs(media_temporal - media_conjunto) / media_conjunto <= margen_tolerancia for media_temporal in medias_temporales)
+
+    return es_ergodica
+
+
+
+
+
+# Carga el DataFrame
 data = pd.read_csv('seoul.csv')
 
 # Ejemplo de uso de la función muestra:
@@ -261,8 +371,29 @@ print(list(proceso_ejemplo.keys())) # Imprimir los días para los que se han ext
 lista_fechas = [['2020031400', '2020031423'], ['2020031500', '2020031523']]
 grafica2d(data, 'o3', 113, lista_fechas, 'graficas2d')
 grafica3d(data, 'o3', 113, '2020031400', '2020031723')
-autocorr_value = autocorrelacion(data, 'o3', 9, 17)
-print(f"Autocorrelación entre las horas 9 y 17: {autocorr_value}")
-data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
 # Ejemplo de uso de la función:
 distribucion(data, 'o3', 113)
+
+# Prepara el DataFrame
+data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
+data.set_index('dt', inplace=True)
+
+# Ahora puedes llamar a las funciones
+autocorr_value = autocorrelacion(data, 'o3', 9, 17)
+print(f"Autocorrelación entre las horas 9 y 17: {autocorr_value}")
+
+autocovarianza_val = autocovarianza(data, 'o3', 9, 17)
+print(f"Autocovarianza entre las 9 y las 17: {autocovarianza_val}")
+
+
+promedio = prom_temporal(data, 'o3', inicio='2020031400', fin='2020031723')
+print(f"El promedio temporal es: {promedio}")
+resultado_ergodicidad = ergodicidad(data, 'o3')
+print(f"La secuencia aleatoria M(t) es ergódica: {resultado_ergodicidad}")
+# Prepara la muestra para wss
+muestra_ejemplo['dt'] = pd.to_datetime(muestra_ejemplo['dt'], format='%Y%m%d%H')
+muestra_ejemplo.set_index('dt', inplace=True)
+
+# Llama a la función wss para la muestra
+resultado_wss_muestra = wss(muestra_ejemplo, 'o3', 'dt')
+print(f"La muestra es estacionaria en sentido amplio: {resultado_wss_muestra}")
