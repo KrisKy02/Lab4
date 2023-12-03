@@ -12,15 +12,25 @@ from mpl_toolkits.mplot3d import Axes3D
 
 def muestra(data, variable, loc, inicio, fin):
     """
-    Extrae una función muestra m(t) del proceso aleatorio M(t) para un contaminante específico,
-    sensor y rango de tiempo.
+    Extrae una función muestra m(t) del proceso aleatorio M(t).
 
-    :param data: DataFrame con las mediciones de contaminantes.
-    :param variable: Contaminante ambiental a considerar (e.g., 'o3').
-    :param loc: Identificador del sensor.
-    :param inicio: Año, mes, día y hora de inicio en formato AAAAMMDDHH.
-    :param fin: Año, mes, día y hora de final en formato AAAAMMDDHH.
-    :return: DataFrame filtrado según los parámetros especificados.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame con las mediciones de contaminantes.
+    variable : str
+        Contaminante ambiental a considerar (e.g., 'o3').
+    loc : int
+        Identificador del sensor.
+    inicio : int
+        Año, mes, día y hora de inicio en formato AAAAMMDDHH.
+    fin : int
+        Año, mes, día y hora de final en formato AAAAMMDDHH.
+
+    Returns
+    -------
+    DataFrame
+        DataFrame filtrado según los parámetros especificados.
     """
     # Filtrando por ubicación del sensor y rango de tiempo
     filtered_data = data[(data['loc'] == loc) & (data['dt'] >= inicio) & (data['dt'] <= fin)]
@@ -31,15 +41,26 @@ def muestra(data, variable, loc, inicio, fin):
 
 def proceso(data, variable, loc, inicio, fin):
     """
-    Devuelve el conjunto de funciones muestra que forman el proceso aleatorio M(t) para un contaminante específico,
-    sensor y rango de tiempo, indexado por un intervalo diario.
+    Devuelve un conjunto de funciones muestra que forman el proceso aleatorio M(t) para un contaminante,
+    sensor y rango de tiempo, indexados por intervalo diario.
 
-    :param data: DataFrame con las mediciones de contaminantes.
-    :param variable: Contaminante ambiental a considerar (e.g., 'o3').
-    :param loc: Identificador del sensor.
-    :param inicio: Año, mes y día de inicio en formato AAAAMMDD.
-    :param fin: Año, mes y día de final en formato AAAAMMDD.
-    :return: Diccionario de DataFrames, cada uno representando una función muestra para un día específico.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame que contiene las mediciones de contaminantes.
+    variable : str
+        Nombre del contaminante ambiental a considerar (e.g., 'o3').
+    loc : int
+        Identificador numérico del sensor.
+    inicio : int
+        Fecha de inicio en formato AAAAMMDD.
+    fin : int
+        Fecha de fin en formato AAAAMMDD.
+
+    Returns
+    -------
+    dict
+        Diccionario de DataFrames, cada uno representando una función muestra para un día específico.
     """
     # Convertir las columnas de fecha a formato datetime para facilitar el filtrado
     data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
@@ -60,6 +81,25 @@ def proceso(data, variable, loc, inicio, fin):
 
 
 def distribucion(data, variable, loc):
+    """
+    Evalúa y compara diferentes distribuciones de probabilidad para los datos de un contaminante
+    en diferentes horas del día, identificando la distribución más común y ajustando un modelo polinomial.
+
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame que contiene las mediciones de contaminantes.
+    variable : str
+        Nombre del contaminante ambiental a considerar (e.g., 'o3').
+    loc : int
+        Identificador numérico del sensor.
+
+    Returns
+    -------
+    dict
+        Diccionario que contiene el nombre de la distribución más común y los polinomios ajustados.
+    """
+
     filtered_data = data[(data['loc'] == loc)][['dt', variable]]
     filtered_data['hour'] = filtered_data['dt'].dt.hour
 
@@ -134,14 +174,26 @@ def distribucion(data, variable, loc):
 
 def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
     """
-    Grafica varias funciones muestra del proceso M(t) en una gráfica.
+    Genera y guarda gráficas 2D para varias funciones muestra del proceso M(t) en un rango de fechas dado.
 
-    :param data: DataFrame con las mediciones de contaminantes.
-    :param variable: Contaminante ambiental a considerar (e.g., 'o3').
-    :param loc: Identificador del sensor.
-    :param lista_fechas: Lista de listas, donde cada sublista contiene fechas de inicio y fin ['AAAAMMDDHH', 'AAAAMMDDHH'].
-    :param carpeta: Nombre del directorio donde se guardarán las gráficas.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame que contiene las mediciones de contaminantes.
+    variable : str
+        Nombre del contaminante ambiental a considerar (e.g., 'o3').
+    loc : int
+        Identificador numérico del sensor.
+    lista_fechas : list of list of str
+        Lista de listas, donde cada sublista contiene fechas de inicio y fin en formato 'AAAAMMDDHH'.
+    carpeta : str, optional
+        Nombre del directorio donde se guardarán las gráficas.
+
+    Returns
+    -------
+    None
     """
+
     # Crear el directorio si no existe
     if not os.path.exists(carpeta):
         os.makedirs(carpeta)
@@ -173,14 +225,27 @@ def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
 
 def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     """
-    Genera una gráfica tridimensional con los modelos de las distribuciones de probabilidad de cada hora del día.
+    Genera y guarda una gráfica tridimensional con los modelos de las distribuciones de probabilidad
+    de cada hora del día para un contaminante y sensor específicos.
 
-    :param data: DataFrame con las mediciones de contaminantes.
-    :param variable: Contaminante ambiental a considerar (e.g., 'o3').
-    :param loc: Identificador del sensor.
-    :param inicio: Fecha y hora de inicio en formato 'AAAAMMDDHH'.
-    :param fin: Fecha y hora de fin en formato 'AAAAMMDDHH'.
-    :param carpeta: Carpeta donde se guardará la gráfica.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame que contiene las mediciones de contaminantes.
+    variable : str
+        Nombre del contaminante ambiental a considerar (e.g., 'o3').
+    loc : int
+        Identificador numérico del sensor.
+    inicio : str
+        Fecha y hora de inicio en formato 'AAAAMMDDHH'.
+    fin : str
+        Fecha y hora de fin en formato 'AAAAMMDDHH'.
+    carpeta : str, optional
+        Carpeta donde se guardará la gráfica.
+
+    Returns
+    -------
+    None
     """
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -219,7 +284,23 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
 
 def autocorrelacion(data, variable, t1, t2):
     """
-    Calcula la autocorrelación para dos horas específicas t1 y t2 para la secuencia aleatoria M(t).
+    Calcula la autocorrelación para dos horas específicas t1 y t2 dentro de la secuencia aleatoria M(t).
+
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame que contiene la secuencia aleatoria M(t).
+    variable : str
+        Nombre de la columna que representa la variable de interés en el DataFrame.
+    t1 : int
+        Hora del día para el primer punto de tiempo en formato de 24 horas.
+    t2 : int
+        Hora del día para el segundo punto de tiempo en formato de 24 horas.
+
+    Returns
+    -------
+    float
+        Valor de la autocorrelación entre t1 y t2, o NaN si no hay suficientes datos para calcular.
     """
 
     # Filtrar los datos por las dos horas específicas
@@ -244,7 +325,23 @@ def autocorrelacion(data, variable, t1, t2):
         return np.nan  # Retornar NaN si no hay pares suficientes
 def autocovarianza(data, variable, t1, t2):
     """
-    Calcula la autocovarianza para dos horas específicas t1 y t2 para la secuencia aleatoria M(t).
+    Calcula la autocovarianza para dos horas específicas t1 y t2 dentro de la secuencia aleatoria M(t).
+
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame que contiene la secuencia aleatoria M(t).
+    variable : str
+        Nombre de la columna que representa la variable de interés en el DataFrame.
+    t1 : int
+        Hora del día para el primer punto de tiempo en formato de 24 horas.
+    t2 : int
+        Hora del día para el segundo punto de tiempo en formato de 24 horas.
+
+    Returns
+    -------
+    float
+        Valor de la autocovarianza entre t1 y t2, o NaN si no hay suficientes datos para calcular.
     """
 
     # Filtrar los datos por las dos horas específicas
@@ -271,14 +368,26 @@ def autocovarianza(data, variable, t1, t2):
 
 def wss(data, variable, datetime_col, threshold=0.05):
     """
-    Determina si la secuencia aleatoria M(t) es estacionaria en sentido amplio.
+    Determina si la secuencia aleatoria M(t) es estacionaria en sentido amplio, considerando un umbral
+    de variación aceptable en media y autocorrelación/autocovarianza.
 
-    :param data: DataFrame de Pandas que contiene la secuencia aleatoria M(t).
-    :param variable: Nombre de la columna en 'data' que contiene los valores de M(t).
-    :param datetime_col: Nombre de la columna en 'data' que contiene las fechas y horas.
-    :param threshold: Umbral para la variación aceptable en media y autocorrelación/autocovarianza.
-    :return: True si la secuencia es estacionaria en sentido amplio, False en caso contrario.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame de Pandas que contiene la secuencia aleatoria M(t).
+    variable : str
+        Nombre de la columna en 'data' que contiene los valores de M(t).
+    datetime_col : str
+        Nombre de la columna en 'data' que contiene las fechas y horas.
+    threshold : float, optional
+        Umbral para la variación aceptable en media y autocorrelación/autocovarianza (por defecto 5%).
+
+    Returns
+    -------
+    bool
+        True si la secuencia es estacionaria en sentido amplio, False en caso contrario.
     """
+
    # Convertir 'dt' a datetime y establecerlo como índice si aún no lo es
     if not pd.api.types.is_datetime64_any_dtype(data.index):
         data[datetime_col] = pd.to_datetime(data[datetime_col])
@@ -313,13 +422,24 @@ def wss(data, variable, datetime_col, threshold=0.05):
 
 def prom_temporal(data, variable, inicio=None, fin=None):
     """
-    Calcula la media temporal A[m(t)] para una función muestra m(t) de la secuencia aleatoria M(t).
+    Calcula la media temporal A[m(t)] para una función muestra m(t) de la secuencia aleatoria M(t)
+    en un intervalo de tiempo seleccionado.
 
-    :param data: DataFrame de Pandas que contiene la función muestra m(t).
-    :param variable: Nombre de la columna en 'data' que representa la variable de interés.
-    :param inicio: Fecha y hora de inicio del intervalo para el promedio temporal en formato AAAAMMDDHH.
-    :param fin: Fecha y hora de fin del intervalo para el promedio temporal en formato AAAAMMDDHH.
-    :return: Media temporal de la variable seleccionada.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame de Pandas que contiene la función muestra m(t).
+    variable : str
+        Nombre de la columna en 'data' que representa la variable de interés.
+    inicio : str, optional
+        Fecha y hora de inicio del intervalo para el promedio temporal en formato AAAAMMDDHH.
+    fin : str, optional
+        Fecha y hora de fin del intervalo para el promedio temporal en formato AAAAMMDDHH.
+
+    Returns
+    -------
+    float
+        Media temporal de la variable seleccionada para el intervalo especificado.
     """
     # Asegurarse de que el índice es de tipo datetime
     if not pd.api.types.is_datetime64_any_dtype(data.index):
@@ -336,12 +456,22 @@ def prom_temporal(data, variable, inicio=None, fin=None):
     return data[variable].mean()
 def ergodicidad(data, variable, margen_tolerancia=0.05):
     """
-    Determina si la secuencia aleatoria M(t) es ergódica.
+    Determina si la secuencia aleatoria M(t) es ergódica, considerando un margen de tolerancia
+    para la comparación de medias temporales y del conjunto.
 
-    :param data: DataFrame de Pandas que contiene la secuencia aleatoria M(t).
-    :param variable: Nombre de la columna en 'data' que representa la variable de interés.
-    :param margen_tolerancia: Margen de tolerancia para la comparación de medias (por defecto 5%).
-    :return: True si la secuencia es ergódica, False en caso contrario.
+    Parameters
+    ----------
+    data : DataFrame
+        DataFrame de Pandas que contiene la secuencia aleatoria M(t).
+    variable : str
+        Nombre de la columna en 'data' que representa la variable de interés.
+    margen_tolerancia : float, optional
+        Margen de tolerancia para la comparación de medias (por defecto 5%).
+
+    Returns
+    -------
+    bool
+        True si la secuencia es ergódica, False en caso contrario.
     """
     # Calcular la media del conjunto
     media_conjunto = data[variable].mean()
