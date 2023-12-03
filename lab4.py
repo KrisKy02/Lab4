@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from mpl_toolkits.mplot3d import Axes3D
 
+
 def muestra(data, variable, loc, inicio, fin):
     """
     Extrae una función muestra m(t) del proceso aleatorio M(t).
@@ -33,16 +34,18 @@ def muestra(data, variable, loc, inicio, fin):
         DataFrame filtrado según los parámetros especificados.
     """
     # Filtrando por ubicación del sensor y rango de tiempo
-    filtered_data = data[(data['loc'] == loc) & (data['dt'] >= inicio) & (data['dt'] <= fin)]
-    
+    filtered_data = data[(data['loc'] == loc) &
+                         (data['dt'] >= inicio) & (data['dt'] <= fin)]
+
     # Seleccionando solo la columna del contaminante especificado
     return filtered_data[['dt', 'loc', variable]]
 
 
 def proceso(data, variable, loc, inicio, fin):
     """
-    Devuelve un conjunto de funciones muestra que forman el proceso aleatorio M(t) para un contaminante,
-    sensor y rango de tiempo, indexados por intervalo diario.
+    Devuelve un conjunto de funciones muestra que forman el proceso
+    aleatorio M(t) para un contaminante, sensor y rango de tiempo,
+    indexados por intervalo diario.
 
     Parameters
     ----------
@@ -60,20 +63,24 @@ def proceso(data, variable, loc, inicio, fin):
     Returns
     -------
     dict
-        Diccionario de DataFrames, cada uno representando una función muestra para un día específico.
+        Diccionario de DataFrames, cada uno representando una
+        función muestra para un día específico.
     """
-    # Convertir las columnas de fecha a formato datetime para facilitar el filtrado
+    # Convertir las columnas de fecha a formato datetime.
     data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
 
     # Filtrando por ubicación del sensor y rango de tiempo
     inicio_datetime = pd.to_datetime(str(inicio), format='%Y%m%d')
     fin_datetime = pd.to_datetime(str(fin), format='%Y%m%d')
-    filtered_data = data[(data['loc'] == loc) & (data['dt'] >= inicio_datetime) & (data['dt'] < fin_datetime)]
+    filtered_data = data[(data['loc'] == loc) & (data['dt'] >= inicio_datetime)
+                         & (data['dt'] < fin_datetime)]
 
     # Creando un diccionario para almacenar cada función muestra por día
     proceso_dict = {}
-    for single_date in pd.date_range(start=inicio_datetime, end=fin_datetime, freq='D'):
-        day_data = filtered_data[filtered_data['dt'].dt.date == single_date.date()][['dt', 'loc', variable]]
+    for single_date in pd.date_range(start=inicio_datetime,
+                                     end=fin_datetime, freq='D'):
+        day_data = filtered_data[filtered_data['dt'].dt.date ==
+                                 single_date.date()][['dt', 'loc', variable]]
         if not day_data.empty:
             proceso_dict[single_date.date()] = day_data
 
@@ -82,8 +89,9 @@ def proceso(data, variable, loc, inicio, fin):
 
 def distribucion(data, variable, loc):
     """
-    Evalúa y compara diferentes distribuciones de probabilidad para los datos de un contaminante
-    en diferentes horas del día, identificando la distribución más común y ajustando un modelo polinomial.
+    Evalúa y compara diferentes distribuciones de probabilidad para
+    los datos de un contaminante en diferentes horas del día, identificando
+    la distribución más común y ajustando un modelo polinomial.
 
     Parameters
     ----------
@@ -97,7 +105,8 @@ def distribucion(data, variable, loc):
     Returns
     -------
     dict
-        Diccionario que contiene el nombre de la distribución más común y los polinomios ajustados.
+        Diccionario que contiene el nombre de la distribución más
+        común y los polinomios ajustados.
     """
 
     filtered_data = data[(data['loc'] == loc)][['dt', variable]]
@@ -109,15 +118,18 @@ def distribucion(data, variable, loc):
 
     # Función interna para comparar distribuciones
     def comparar_distribuciones(data):
-        distribuciones = [st.norm, st.lognorm, st.expon, st.gamma, st.weibull_min, st.weibull_max]
+        distribuciones = [st.norm, st.lognorm, st.expon, st.gamma,
+                          st.weibull_min, st.weibull_max]
         resultados = pd.DataFrame()
 
         for distribucion in distribuciones:
             try:
                 parametros = distribucion.fit(data)
-                log_likelihood = np.sum(np.log(distribucion.pdf(data, *parametros)))
+                log_likelihood = np.sum(np.log(distribucion.pdf(data,
+                                        *parametros)))
                 aic = 2 * len(parametros) - 2 * log_likelihood
-                fila = pd.DataFrame({'Distribucion': [distribucion.name], 'AIC': [aic]})
+                fila = pd.DataFrame({'Distribucion': [distribucion.name],
+                                    'AIC': [aic]})
                 resultados = pd.concat([resultados, fila], ignore_index=True)
             except Exception:
                 pass
@@ -125,15 +137,18 @@ def distribucion(data, variable, loc):
         return resultados.sort_values(by='AIC').iloc[0]
 
     for hour in range(24):
-        hourly_data = filtered_data[filtered_data['hour'] == hour][variable].dropna()
+        hourly_data = filtered_data[filtered_data['hour']
+                                    == hour][variable].dropna()
 
         # Crear y guardar histograma
         plt.figure(figsize=(6, 4))
         sns.histplot(hourly_data, kde=True)
-        plt.title(f'Distribución de {variable} en la hora {hour} para el sensor {loc}')
+        plt.title(f'Distribución de {variable} en la hora {hour} '
+                  f'para el sensor {loc}')
         plt.xlabel(f'Valores de {variable}')
         plt.ylabel('Frecuencia')
-        plt.savefig(f'histogramas_distribucion/histograma_{variable}_loc{loc}_hora{hour}.png')
+        plt.savefig(f'histogramas_distribucion/histograma_{variable}_'
+                    f'loc{loc}_hora{hour}.png')
         plt.close()
 
         if len(hourly_data) > 1:
@@ -147,8 +162,10 @@ def distribucion(data, variable, loc):
     distribucion_mas_comun = pd.Series(mejor_distribucion_global).mode()[0]
 
     # Preparar los datos para el ajuste polinomial
-    horas_con_datos = [hour for hour in range(24) if mejor_distribucion_global[hour] == distribucion_mas_comun]
-    parametros_seleccionados = [parametros_globales[hour] for hour in horas_con_datos]
+    horas_con_datos = [hour for hour in range(24) if mejor_distribucion_global
+                       [hour] == distribucion_mas_comun]
+    parametros_seleccionados = [parametros_globales[hour]
+                                for hour in horas_con_datos]
     parametros_transpuestos = list(zip(*parametros_seleccionados))
 
     # Ajuste de funciones polinomiales
@@ -172,9 +189,11 @@ def distribucion(data, variable, loc):
         "polinomios": polinomios
     }
 
+
 def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
     """
-    Genera y guarda gráficas 2D para varias funciones muestra del proceso M(t) en un rango de fechas dado.
+    Genera y guarda gráficas 2D para varias funciones
+    muestra del proceso M(t) en un rango de fechas dado.
 
     Parameters
     ----------
@@ -185,7 +204,8 @@ def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
     loc : int
         Identificador numérico del sensor.
     lista_fechas : list of list of str
-        Lista de listas, donde cada sublista contiene fechas de inicio y fin en formato 'AAAAMMDDHH'.
+        Lista de listas, donde cada sublista contiene fechas de
+        inicio y fin en formato 'AAAAMMDDHH'.
     carpeta : str, optional
         Nombre del directorio donde se guardarán las gráficas.
 
@@ -206,11 +226,12 @@ def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
         fin_datetime = datetime.strptime(fin, '%Y%m%d%H')
 
         # Filtrar los datos
-        filtered_data = data[(data['loc'] == loc) & 
-                             (data['dt'] >= inicio_datetime) & 
+        filtered_data = data[(data['loc'] == loc) &
+                             (data['dt'] >= inicio_datetime) &
                              (data['dt'] <= fin_datetime)]
 
-        plt.plot(filtered_data['dt'], filtered_data[variable], label=f'{inicio} a {fin}')
+        plt.plot(filtered_data['dt'], filtered_data[variable],
+                 label=f'{inicio} a {fin}')
 
     plt.xlabel('Fecha y Hora')
     plt.ylabel(f'Nivel de {variable} (Unidades)')
@@ -223,10 +244,12 @@ def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
     plt.savefig(filename)
     plt.close()
 
+
 def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     """
-    Genera y guarda una gráfica tridimensional con los modelos de las distribuciones de probabilidad
-    de cada hora del día para un contaminante y sensor específicos.
+    Genera y guarda una gráfica tridimensional con los modelos de las
+    distribuciones de probabilidad de cada hora del día para un contaminante
+    y sensor específicos.
 
     Parameters
     ----------
@@ -249,7 +272,6 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     """
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    
     # Crear la carpeta si no existe
     if not os.path.exists(carpeta):
         os.makedirs(carpeta)
@@ -263,13 +285,13 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     # Generar y graficar las distribuciones para cada hora
     colors = plt.cm.jet(np.linspace(0, 1, 24))  # Utilizar un mapa de colores
     for i, hour in enumerate(range(24)):
-        hourly_data = data[(data['loc'] == loc) & (data['hour'] == hour)][variable].dropna()
+        hourly_data = data[(data['loc'] == loc) &
+                           (data['hour'] == hour)][variable].dropna()
         if not hourly_data.empty:
             # Ajustar una distribución a los datos
             mu, sigma = st.norm.fit(hourly_data)
             x = np.linspace(mu - 3*sigma, mu + 3*sigma, 100)
             y = st.norm.pdf(x, mu, sigma)
-            # Cambiar eje X a la hora del día y centrar la distribución en la hora
             ax.plot(np.full_like(x, hour), x, y, color=colors[i])
 
     ax.set_xlabel('Hora del Día')
@@ -282,16 +304,19 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     plt.savefig(filename)
     plt.close(fig)
 
+
 def autocorrelacion(data, variable, t1, t2):
     """
-    Calcula la autocorrelación para dos horas específicas t1 y t2 dentro de la secuencia aleatoria M(t).
+    Calcula la autocorrelación para dos horas específicas t1 y t2 dentro
+    de la secuencia aleatoria M(t).
 
     Parameters
     ----------
     data : DataFrame
         DataFrame que contiene la secuencia aleatoria M(t).
     variable : str
-        Nombre de la columna que representa la variable de interés en el DataFrame.
+        Nombre de la columna que representa la variable de interés
+        en el DataFrame.
     t1 : int
         Hora del día para el primer punto de tiempo en formato de 24 horas.
     t2 : int
@@ -300,7 +325,8 @@ def autocorrelacion(data, variable, t1, t2):
     Returns
     -------
     float
-        Valor de la autocorrelación entre t1 y t2, o NaN si no hay suficientes datos para calcular.
+        Valor de la autocorrelación entre t1 y t2, o NaN si no hay suficientes
+        datos para calcular.
     """
 
     # Filtrar los datos por las dos horas específicas
@@ -323,16 +349,20 @@ def autocorrelacion(data, variable, t1, t2):
         return np.corrcoef(data_t1_aligned, data_t2_aligned)[0, 1]
     else:
         return np.nan  # Retornar NaN si no hay pares suficientes
+
+
 def autocovarianza(data, variable, t1, t2):
     """
-    Calcula la autocovarianza para dos horas específicas t1 y t2 dentro de la secuencia aleatoria M(t).
+    Calcula la autocovarianza para dos horas específicas t1 y t2
+    dentro de la secuencia aleatoria M(t).
 
     Parameters
     ----------
     data : DataFrame
         DataFrame que contiene la secuencia aleatoria M(t).
     variable : str
-        Nombre de la columna que representa la variable de interés en el DataFrame.
+        Nombre de la columna que representa la variable de interés
+        en el DataFrame.
     t1 : int
         Hora del día para el primer punto de tiempo en formato de 24 horas.
     t2 : int
@@ -341,7 +371,8 @@ def autocovarianza(data, variable, t1, t2):
     Returns
     -------
     float
-        Valor de la autocovarianza entre t1 y t2, o NaN si no hay suficientes datos para calcular.
+        Valor de la autocovarianza entre t1 y t2, o NaN si no hay suficientes
+        datos para calcular.
     """
 
     # Filtrar los datos por las dos horas específicas
@@ -361,15 +392,18 @@ def autocovarianza(data, variable, t1, t2):
 
     # Calcular la autocovarianza si hay pares suficientes
     if not data_t1_aligned.empty and not data_t2_aligned.empty:
-        covariance = np.mean((data_t1_aligned - data_t1_aligned.mean()) * (data_t2_aligned - data_t2_aligned.mean()))
+        covariance = np.mean((data_t1_aligned - data_t1_aligned.mean()) *
+                             (data_t2_aligned - data_t2_aligned.mean()))
         return covariance
     else:
         return np.nan  # Retornar NaN si no hay pares suficientes
 
+
 def wss(data, variable, datetime_col, threshold=0.05):
     """
-    Determina si la secuencia aleatoria M(t) es estacionaria en sentido amplio, considerando un umbral
-    de variación aceptable en media y autocorrelación/autocovarianza.
+    Determina si la secuencia aleatoria M(t) es estacionaria en sentido amplio,
+    considerando un umbral de variación aceptable en media y
+    autocorrelación/autocovarianza.
 
     Parameters
     ----------
@@ -380,27 +414,27 @@ def wss(data, variable, datetime_col, threshold=0.05):
     datetime_col : str
         Nombre de la columna en 'data' que contiene las fechas y horas.
     threshold : float, optional
-        Umbral para la variación aceptable en media y autocorrelación/autocovarianza (por defecto 5%).
+        Umbral para la variación aceptable en media y
+        autocorrelación/autocovarianza (por defecto 5%).
 
     Returns
     -------
     bool
-        True si la secuencia es estacionaria en sentido amplio, False en caso contrario.
+        True si la secuencia es estacionaria en sentido amplio, False en caso
+        contrario.
     """
 
-   # Convertir 'dt' a datetime y establecerlo como índice si aún no lo es
+    # Convertir 'dt' a datetime y establecerlo como índice.
     if not pd.api.types.is_datetime64_any_dtype(data.index):
         data[datetime_col] = pd.to_datetime(data[datetime_col])
         data.set_index(datetime_col, inplace=True)
-
-
     # Calcula la media para diferentes horas
     hourly_means = data.groupby(data.index.hour)[variable].mean()
-    
     # Verificar si la media cambia más del 5%
-    mean_stationary = np.all(np.abs(hourly_means - hourly_means.mean()) / hourly_means.mean() <= threshold)
+    mean_stationary = np.all(np.abs(hourly_means - hourly_means.mean()) /
+                             hourly_means.mean() <= threshold)
 
-    # Calcular y verificar la autocorrelación/autocovarianza para diferentes horas
+    # Calcular la autocorrelación/autocovarianza para diferentes horas
     hours = data.index.hour.unique()
     autocorr_changes = []
     for i in range(len(hours)):
@@ -412,18 +446,22 @@ def wss(data, variable, datetime_col, threshold=0.05):
 
     # Verificar si la autocorrelación y autocovarianza cambian más del 5%
     autocorr_stationary = all(
-        np.abs(val - np.nanmean([x[0] for x in autocorr_changes])) / np.nanmean([x[0] for x in autocorr_changes]) <= threshold
+        np.abs(val - np.nanmean([x[0] for x in autocorr_changes])) /
+        np.nanmean([x[0] for x in autocorr_changes]) <= threshold
         and
-        np.abs(val - np.nanmean([x[1] for x in autocorr_changes])) / np.nanmean([x[1] for x in autocorr_changes]) <= threshold
-        for val in [x[0] for x in autocorr_changes] + [x[1] for x in autocorr_changes]
+        np.abs(val - np.nanmean([x[1] for x in autocorr_changes])) /
+        np.nanmean([x[1] for x in autocorr_changes]) <= threshold
+        for val in [x[0] for x in autocorr_changes] +
+        [x[1] for x in autocorr_changes]
     )
 
     return mean_stationary and autocorr_stationary
 
+
 def prom_temporal(data, variable, inicio=None, fin=None):
     """
-    Calcula la media temporal A[m(t)] para una función muestra m(t) de la secuencia aleatoria M(t)
-    en un intervalo de tiempo seleccionado.
+    Calcula la media temporal A[m(t)] para una función muestra m(t)
+    de la secuencia aleatoria M(t) en un intervalo de tiempo seleccionado.
 
     Parameters
     ----------
@@ -432,14 +470,17 @@ def prom_temporal(data, variable, inicio=None, fin=None):
     variable : str
         Nombre de la columna en 'data' que representa la variable de interés.
     inicio : str, optional
-        Fecha y hora de inicio del intervalo para el promedio temporal en formato AAAAMMDDHH.
+        Fecha y hora de inicio del intervalo para el promedio temporal en
+        formato AAAAMMDDHH.
     fin : str, optional
-        Fecha y hora de fin del intervalo para el promedio temporal en formato AAAAMMDDHH.
+        Fecha y hora de fin del intervalo para el promedio temporal en
+        formato AAAAMMDDHH.
 
     Returns
     -------
     float
-        Media temporal de la variable seleccionada para el intervalo especificado.
+        Media temporal de la variable seleccionada para el intervalo
+        especificado.
     """
     # Asegurarse de que el índice es de tipo datetime
     if not pd.api.types.is_datetime64_any_dtype(data.index):
@@ -454,10 +495,13 @@ def prom_temporal(data, variable, inicio=None, fin=None):
         data = data[data.index <= fin]
 
     return data[variable].mean()
+
+
 def ergodicidad(data, variable, margen_tolerancia=0.05):
     """
-    Determina si la secuencia aleatoria M(t) es ergódica, considerando un margen de tolerancia
-    para la comparación de medias temporales y del conjunto.
+    Determina si la secuencia aleatoria M(t) es ergódica,
+    considerando un margen de tolerancia para la comparación
+    de medias temporales y del conjunto.
 
     Parameters
     ----------
@@ -479,13 +523,14 @@ def ergodicidad(data, variable, margen_tolerancia=0.05):
     # Calcular la media temporal para cada función muestra
     medias_temporales = data.groupby(data.index.date)[variable].mean()
 
-    # Verificar si cada media temporal está dentro del margen de tolerancia con respecto a la media del conjunto
-    es_ergodica = all(abs(media_temporal - media_conjunto) / media_conjunto <= margen_tolerancia for media_temporal in medias_temporales)
+    # Verificar si cada media temporal está dentro del margen de tolerancia
+    # con respecto a la media del conjunto
+    es_ergodica = all(
+        abs(media_temporal - media_conjunto) / media_conjunto <=
+        margen_tolerancia for media_temporal in medias_temporales
+    )
 
     return es_ergodica
-
-
-
 
 
 # Carga el DataFrame
@@ -497,7 +542,8 @@ print(muestra_ejemplo.head())
 
 # Ejemplo de uso de la función proceso:
 proceso_ejemplo = proceso(data, 'o3', 113, 20200314, 20200317)
-print(list(proceso_ejemplo.keys())) # Imprimir los días para los que se han extraído funciones muestra.
+# Imprimir los días para los que se han extraído funciones muestra.
+print(list(proceso_ejemplo.keys()))
 lista_fechas = [['2020031400', '2020031423'], ['2020031500', '2020031523']]
 grafica2d(data, 'o3', 113, lista_fechas, 'graficas2d')
 grafica3d(data, 'o3', 113, '2020031400', '2020031723')
@@ -521,7 +567,8 @@ print(f"El promedio temporal es: {promedio}")
 resultado_ergodicidad = ergodicidad(data, 'o3')
 print(f"La secuencia aleatoria M(t) es ergódica: {resultado_ergodicidad}")
 # Prepara la muestra para wss
-muestra_ejemplo['dt'] = pd.to_datetime(muestra_ejemplo['dt'], format='%Y%m%d%H')
+muestra_ejemplo['dt'] = pd.to_datetime(muestra_ejemplo['dt'],
+                                       format='%Y%m%d%H')
 muestra_ejemplo.set_index('dt', inplace=True)
 
 # Llama a la función wss para la muestra
