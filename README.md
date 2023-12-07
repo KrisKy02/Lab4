@@ -15,7 +15,7 @@ Este código requiere las siguientes bibliotecas:
 Para instalar las dependencias, ejecuta el siguiente comando:
 ```bash
 pip install pandas numpy scipy matplotlib seaborn
-
+```
 Para ejecutar el análisis, primero importa las funciones desde `proceso.py` y luego utiliza cada función con los datos apropiados.
 
 ## Documentación Teórica
@@ -37,3 +37,4 @@ Aquí se muestra cómo utilizar cada una de las funciones principales del proyec
 ```python
 # Ejemplo de uso de la función distribucion
 resultado_distribucion = distribucion(data, 'o3', 113)
+```
