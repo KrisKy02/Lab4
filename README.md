@@ -62,8 +62,24 @@ Las funciones implementadas en este proyecto se basan en la teoría estadística
 #### Aplicación Práctica
 - Ideal para investigadores interesados en analizar patrones temporales en los datos de contaminación, como cambios diarios o identificación de eventos de contaminación específicos.
 
-### Función `distribucion`
-Calcula y compara diferentes distribuciones de probabilidad para los datos de un contaminante, identificando la distribución más común y ajustando un modelo polinomial.
+## Función `distribucion`
+
+### Teoría detrás de la Función `distribucion`
+
+#### Análisis de Distribución de Probabilidad
+- Evalúa cómo se distribuyen los valores de los contaminantes, comparando varias distribuciones conocidas para encontrar la más adecuada.
+
+#### Comparación y Ajuste de Distribuciones
+- Utiliza el Criterio de Información de Akaike (AIC) para determinar la mejor distribución y ajusta un modelo polinomial a los parámetros de esta distribución.
+
+#### Visualización y Análisis Horario
+- Genera histogramas para cada hora del día, proporcionando una visualización de cómo cambia la distribución del contaminante a lo largo de un día.
+
+#### Parámetros y Salida
+- `data`: DataFrame con mediciones de contaminantes.
+- `variable`: Contaminante a analizar.
+- `loc`: Identificador del sensor.
+- Salida: Un diccionario que contiene la distribución más común y los polinomios ajustados.
 
 ### Función `prom_temporal`
 Calcula la media temporal de una variable ambiental en un intervalo de tiempo seleccionado.
