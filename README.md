@@ -132,17 +132,17 @@ Las funciones implementadas en este proyecto se basan en la teoría estadística
 #### Consideraciones Estadísticas
 - Utiliza el coeficiente de correlación de Pearson, proporcionando un valor entre -1 y 1 para indicar la fuerza y la dirección de la correlación.
 - Maneja situaciones con datos insuficientes, retornando NaN cuando no es posible calcular una correlación significativa.
-- #### Fórmula de la Autocorrelación
-La autocorrelación es una medida estadística que evalúa cómo dos puntos en una serie temporal se relacionan linealmente entre sí en diferentes tiempos. La fórmula matemática para calcular la autocorrelación entre dos puntos de tiempo \( t_1 \) y \( t_2 \) para una serie temporal \( X \) es:
+#### Fórmula de la Autocorrelación
+La autocorrelación entre dos puntos en el tiempo t1 y t2 se calcula como:
 
-\[ R(t_1, t_2) = \frac{E[(X_{t_1} - \mu_{t_1})(X_{t_2} - \mu_{t_2})]}{\sigma_{t_1} \sigma_{t_2}} \]
+R(t1, t2) = E[(X(t1) - μ(t1)) * (X(t2) - μ(t2))] / (σ(t1) * σ(t2))
 
 donde:
-- \( R(t_1, t_2) \) es el coeficiente de autocorrelación entre \( t_1 \) y \( t_2 \).
-- \( E \) representa el valor esperado.
-- \( X_{t_1} \) y \( X_{t_2} \) son los valores de la serie en los tiempos \( t_1 \) y \( t_2 \), respectivamente.
-- \( \mu_{t_1} \) y \( \mu_{t_2} \) son las medias de la serie en \( t_1 \) y \( t_2 \).
-- \( \sigma_{t_1} \) y \( \sigma_{t_2} \) son las desviaciones estándar en \( t_1 \) y \( t_2 \).
+- R(t1, t2) es el coeficiente de autocorrelación.
+- E es el valor esperado.
+- X(t1) y X(t2) son los valores de la serie en los tiempos t1 y t2.
+- μ(t1) y μ(t2) son las medias en los tiempos t1 y t2.
+- σ(t1) y σ(t2) son las desviaciones estándar en los tiempos t1 y t2.
 
 #### Cálculo en la Función `autocorrelacion`
 En la implementación de `autocorrelacion`, se calculan primero las medias diarias para cada hora específica (\( t_1 \) y \( t_2 \)), y luego se utiliza la función `np.corrcoef` de NumPy para calcular el coeficiente de autocorrelación. Esta función aplica la fórmula anterior para medir la relación lineal entre las dos series temporales.
@@ -164,6 +164,22 @@ Este enfoque combina principios matemáticos y estadísticos fundamentales para 
 
 #### Consideraciones Estadísticas
 - Maneja situaciones con datos insuficientes, retornando NaN cuando no es posible realizar un cálculo significativo.
+#### Fórmula de la Autocovarianza
+La autocovarianza entre dos puntos en el tiempo t1 y t2 se calcula como:
+
+C(t1, t2) = E[(X(t1) - μ(t1)) * (X(t2) - μ(t2))]
+
+donde:
+- C(t1, t2) es el valor de autocovarianza.
+- E representa el valor esperado.
+- X(t1) y X(t2) son los valores de la serie en los tiempos t1 y t2.
+- μ(t1) y μ(t2) son las medias en los tiempos t1 y t2.
+
+#### Cálculo en la Función `autocovarianza`
+En la implementación de `autocovarianza`, se calculan las medias diarias para cada hora específica (\( t_1 \) y \( t_2 \)) y luego se evalúa la covarianza entre estas dos series temporales. La función se enfoca en calcular el valor esperado del producto de las desviaciones de \( X_{t_1} \) y \( X_{t_2} \) de sus respectivas medias.
+
+Este enfoque permite comprender cómo dos puntos en el tiempo de una serie temporal están relacionados en términos de variación conjunta, proporcionando una perspectiva más profunda que la autocorrelación.
+
 ## Función `wss`
 
 ### Teoría detrás de la Función `wss`
