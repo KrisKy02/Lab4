@@ -11,6 +11,12 @@ El script se estructura de la siguiente manera:
 - Carga y preparación de los datos ambientales.
 - Ejemplo de uso de cada función del módulo `proceso`.
 - Análisis estadístico de los datos utilizando las funciones del módulo.
+
+Estudiantes:
+
+Kristel Herrera Rodríguez C13769
+Oscar Porras Silesky C16042
+Fabrizzio Herrera Calvo B83849
 """
 import os
 import pandas as pd
