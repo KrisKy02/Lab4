@@ -13,7 +13,7 @@ Este código requiere las siguientes bibliotecas:
 
 ## Instalación y Ejecución
 Para instalar las dependencias, ejecuta el siguiente comando:
-``bash
+```bash
 pip install pandas numpy scipy matplotlib seaborn
 
 Para ejecutar el análisis, primero importa las funciones desde `proceso.py` y luego utiliza cada función con los datos apropiados.
