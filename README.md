@@ -80,12 +80,143 @@ Las funciones implementadas en este proyecto se basan en la teoría estadística
 - `variable`: Contaminante a analizar.
 - `loc`: Identificador del sensor.
 - Salida: Un diccionario que contiene la distribución más común y los polinomios ajustados.
+## Función `grafica2d`
 
-### Función `prom_temporal`
-Calcula la media temporal de una variable ambiental en un intervalo de tiempo seleccionado.
+### Teoría detrás de la Función `grafica2d`
 
-### Función `ergodicidad`
-Determina si una secuencia aleatoria es ergódica basándose en un margen de tolerancia para la comparación de medias temporales y del conjunto.
+#### Visualización de Datos en Series Temporales
+- Gráficas 2D para visualizar series temporales de mediciones de contaminantes, mostrando cómo evoluciona la variable a lo largo del tiempo.
+
+#### Comparación de Intervalos Temporales
+- Permite comparar visualmente los niveles de contaminantes en diferentes periodos, identificando tendencias o cambios significativos.
+
+#### Parámetros de la Función
+- `data`: DataFrame con mediciones de contaminantes.
+- `variable`: Contaminante a graficar.
+- `loc`: Identificador del sensor.
+- `lista_fechas`: Intervalos de tiempo para generar gráficas.
+- `carpeta`: Directorio para guardar las gráficas.
+
+#### Creación y Guardado de Gráficas
+- Genera gráficas diferenciando cada intervalo de tiempo, facilitando la comparación visual.
+- Muestra el nivel del contaminante en función de la fecha y hora, y guarda las gráficas para análisis posteriores.
+## Función `grafica3d`
+
+### Teoría detrás de la Función `grafica3d`
+
+#### Visualización Tridimensional
+- Las gráficas 3D permiten visualizar relaciones complejas entre múltiples variables, mostrando las distribuciones de probabilidad de las mediciones de un contaminante a lo largo del día.
+
+#### Distribuciones de Probabilidad Horarias
+- Analiza y grafica las distribuciones de probabilidad de un contaminante específico para cada hora del día, revelando variaciones en sus características.
+
+#### Parámetros de la Función
+- `data`: DataFrame con mediciones de contaminantes.
+- `variable`: Contaminante a analizar.
+- `loc`: Identificador del sensor.
+- `inicio` y `fin`: Período de tiempo para el análisis.
+- `carpeta`: Directorio para guardar la gráfica.
+
+#### Análisis y Visualización
+- Crea una gráfica 3D con ejes representando la hora del día, valores del contaminante, y densidad de probabilidad, utilizando colores para diferenciar cada hora.
+## Función `autocorrelacion`
+
+### Teoría detrás de la Función `autocorrelacion`
+
+#### Concepto de Autocorrelación
+- La autocorrelación mide la relación entre observaciones de una misma variable en diferentes momentos del tiempo, crucial para identificar patrones o dependencias en series temporales.
+
+#### Cálculo de la Autocorrelación
+- Calcula la correlación entre mediciones de un contaminante en dos horas específicas del día, agrupando los datos por fecha y calculando medias diarias.
+
+#### Consideraciones Estadísticas
+- Utiliza el coeficiente de correlación de Pearson, proporcionando un valor entre -1 y 1 para indicar la fuerza y la dirección de la correlación.
+- Maneja situaciones con datos insuficientes, retornando NaN cuando no es posible calcular una correlación significativa.
+- #### Fórmula de la Autocorrelación
+La autocorrelación es una medida estadística que evalúa cómo dos puntos en una serie temporal se relacionan linealmente entre sí en diferentes tiempos. La fórmula matemática para calcular la autocorrelación entre dos puntos de tiempo \( t_1 \) y \( t_2 \) para una serie temporal \( X \) es:
+
+\[ R(t_1, t_2) = \frac{E[(X_{t_1} - \mu_{t_1})(X_{t_2} - \mu_{t_2})]}{\sigma_{t_1} \sigma_{t_2}} \]
+
+donde:
+- \( R(t_1, t_2) \) es el coeficiente de autocorrelación entre \( t_1 \) y \( t_2 \).
+- \( E \) representa el valor esperado.
+- \( X_{t_1} \) y \( X_{t_2} \) son los valores de la serie en los tiempos \( t_1 \) y \( t_2 \), respectivamente.
+- \( \mu_{t_1} \) y \( \mu_{t_2} \) son las medias de la serie en \( t_1 \) y \( t_2 \).
+- \( \sigma_{t_1} \) y \( \sigma_{t_2} \) son las desviaciones estándar en \( t_1 \) y \( t_2 \).
+
+#### Cálculo en la Función `autocorrelacion`
+En la implementación de `autocorrelacion`, se calculan primero las medias diarias para cada hora específica (\( t_1 \) y \( t_2 \)), y luego se utiliza la función `np.corrcoef` de NumPy para calcular el coeficiente de autocorrelación. Esta función aplica la fórmula anterior para medir la relación lineal entre las dos series temporales.
+
+Este enfoque combina principios matemáticos y estadísticos fundamentales para proporcionar una comprensión profunda del comportamiento de la serie temporal.
+
+## Función `autocovarianza`
+
+### Teoría detrás de la Función `autocovarianza`
+
+#### Concepto de Autocovarianza
+- Mide cómo dos puntos diferentes en el tiempo de una misma serie temporal varían juntos, proporcionando una perspectiva más amplia que la autocorrelación.
+
+#### Cálculo de la Autocovarianza
+- Calcula la covarianza entre mediciones de un contaminante en dos horas específicas del día, agrupando los datos por fecha y calculando medias diarias.
+
+#### Aplicación en Datos Ambientales
+- Útil para identificar patrones temporales y la persistencia de condiciones ambientales a lo largo del tiempo.
+
+#### Consideraciones Estadísticas
+- Maneja situaciones con datos insuficientes, retornando NaN cuando no es posible realizar un cálculo significativo.
+## Función `wss`
+
+### Teoría detrás de la Función `wss`
+
+#### Estacionariedad en Sentido Amplio
+- Evalúa si una serie temporal, como las mediciones de un contaminante, tiene propiedades estadísticas consistentes a lo largo del tiempo, incluyendo la media y la autocovarianza/autocorrelación.
+
+#### Cálculo de la Estacionariedad
+- Verifica la consistencia de la media y las medidas de autocorrelación/autocovarianza de la variable a lo largo del tiempo, dentro de un umbral de variación aceptable.
+
+#### Parámetros y Umbral
+- `data`: DataFrame con mediciones de contaminantes.
+- `variable`: Variable de interés.
+- `datetime_col`: Columna con marcas de tiempo.
+- `threshold`: Umbral para la variación aceptable en la media y autocorrelación/autocovarianza.
+
+#### Aplicación en Análisis Ambiental
+- Útil para determinar si las características de un contaminante son consistentes a lo largo del tiempo, importante para la predicción y modelización del comportamiento del contaminante.
+
+## Función `prom_temporal`
+
+### Teoría detrás de la Función `prom_temporal`
+
+#### Media Temporal en Series Temporales
+- Calcula el valor medio de una variable en un intervalo de tiempo específico, proporcionando una medida fundamental para entender tendencias generales en series temporales.
+
+#### Selección de Intervalos Temporales
+- Permite especificar un intervalo de tiempo para el análisis, facilitando el estudio de datos en marcos temporales concretos.
+
+#### Implementación y Uso
+- Verifica que los datos estén indexados por fecha y hora, filtra según intervalos temporales específicos y calcula la media de la variable seleccionada.
+
+#### Aplicación Práctica
+- Fundamental para el análisis preliminar de datos ambientales, ayudando a entender los niveles promedio de contaminantes en períodos específicos.
+
+## Función `ergodicidad`
+
+### Teoría detrás de la Función `ergodicidad`
+
+#### Concepto de Ergodicidad
+- Indica que las propiedades estadísticas de una serie temporal son consistentes tanto en todo el conjunto de datos como en cualquier subconjunto temporal.
+
+#### Evaluación de la Ergodicidad
+- Compara las medias temporales de la variable de interés en diferentes momentos con la media general del conjunto de datos, usando un margen de tolerancia para determinar si las diferencias están dentro de un rango aceptable.
+
+#### Parámetros y Umbral
+- `data`: DataFrame con mediciones de contaminantes.
+- `variable`: Variable de interés.
+- `margen_tolerancia`: Margen de tolerancia para la comparación de medias, generalmente establecido en 5%.
+
+#### Aplicación en Análisis Ambiental
+- Importante para determinar si las características de un contaminante son consistentes a lo largo del tiempo y si los datos son representativos de la serie temporal completa.
+
 
 ## Ejemplos de Uso
 Aquí se muestra cómo utilizar cada una de las funciones principales del proyecto:
