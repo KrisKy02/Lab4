@@ -2,7 +2,9 @@
 # Estudiantes:
 
 Kristel Herrera Rodríguez C13769
+
 Oscar Porras Silesky C16042
+
 Fabrizzio Herrera Calvo B83849
 
 
