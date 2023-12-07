@@ -40,6 +40,27 @@ Las funciones implementadas en este proyecto se basan en la teoría estadística
 
 #### Aplicación Práctica
 - Esta función es útil para investigadores y analistas que necesitan enfocarse en un conjunto específico de datos dentro de un marco temporal y espacial determinado, como analizar los cambios en los niveles de un contaminante en una ubicación específica durante un periodo concreto.
+## Función `proceso`
+
+### Teoría detrás de la Función `proceso`
+
+#### Concepto de Proceso Aleatorio M(t)
+- `M(t)` representa un proceso aleatorio de mediciones de un contaminante a lo largo del tiempo, permitiendo analizar cómo estas mediciones varían y se comportan.
+
+#### Creación de Funciones Muestra Diarias
+- La función `proceso` crea un conjunto de funciones muestra, cada una representando un día específico dentro de un rango de fechas, facilitando el análisis de variaciones diarias.
+
+#### Parámetros de la Función `proceso`
+- `data`: El conjunto de datos con mediciones de contaminantes.
+- `variable`: El contaminante específico a estudiar.
+- `loc`: Identificador del sensor, para enfocarse en mediciones de una ubicación específica.
+- `inicio` y `fin`: Definen el rango de fechas para el análisis.
+
+#### Indexación por Intervalo Diario
+- La función genera un diccionario donde cada clave es una fecha específica y cada valor es un DataFrame con mediciones para ese día, permitiendo un análisis detallado y comparativo.
+
+#### Aplicación Práctica
+- Ideal para investigadores interesados en analizar patrones temporales en los datos de contaminación, como cambios diarios o identificación de eventos de contaminación específicos.
 
 ### Función `distribucion`
 Calcula y compara diferentes distribuciones de probabilidad para los datos de un contaminante, identificando la distribución más común y ajustando un modelo polinomial.
