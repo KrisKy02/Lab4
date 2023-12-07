@@ -1,3 +1,34 @@
+"""
+Laboratorio 5.
+
+IE0405 - Modelos Probabilísticos de Señales y Sistemas
+Universidad de Costa Rica
+
+Módulo de Proceso para Análisis de Datos Ambientales
+
+Este módulo contiene un conjunto de funciones diseñadas para realizar análisis
+estadísticos y gráficos de series temporales de datos ambientales. Las
+funciones permiten calcular medias temporales, determinar la ergodicidad,
+evaluar distribuciones de probabilidad y visualizar datos en gráficas 2D y 3D.
+
+Funciones:
+    muestra(data, variable, loc, inicio, fin): Extrae una función muestra m(t).
+    proceso(data, variable, loc, inicio, fin): Conjunto de funciones muestra.
+    distribucion(data, variable, loc): Evalúa distribuciones de probabilidad.
+    grafica2d(data, variable, loc, lista_fechas, carpeta): Genera gráficas 2D.
+    grafica3d(data, variable, loc, inicio, fin, carpeta): Genera gráficas 3D.
+    autocorrelacion(data, variable, t1, t2): Calcula la autocorrelación.
+    autocovarianza(data, variable, t1, t2): Calcula la autocovarianza.
+    wss(data, variable, datetime_col, threshold): Determina la estacionariedad.
+    prom_temporal(data, variable, inicio, fin): Calcula la media temporal.
+
+El módulo fue diseñado para ser utilizado en el contexto de monitoreo y
+análisis ambiental, proporcionando herramientas para el procesamiento y
+análisis detallado de datos de calidad del aire y otros contaminantes
+ambientales.
+"""
+
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -43,6 +74,8 @@ def muestra(data, variable, loc, inicio, fin):
 
 def proceso(data, variable, loc, inicio, fin):
     """
+    Funcion Proceso.
+
     Devuelve un conjunto de funciones muestra que forman el proceso
     aleatorio M(t) para un contaminante, sensor y rango de tiempo,
     indexados por intervalo diario.
@@ -89,6 +122,8 @@ def proceso(data, variable, loc, inicio, fin):
 
 def distribucion(data, variable, loc):
     """
+    Función Distribucion.
+
     Evalúa y compara diferentes distribuciones de probabilidad para
     los datos de un contaminante en diferentes horas del día, identificando
     la distribución más común y ajustando un modelo polinomial.
@@ -108,6 +143,12 @@ def distribucion(data, variable, loc):
         Diccionario que contiene el nombre de la distribución más
         común y los polinomios ajustados.
     """
+    # Verifica si el directorio existe, y si no, créalo
+    if not os.path.exists('histogramas_distribucion'):
+        os.makedirs('histogramas_distribucion')
+
+    filtered_data = data[(data['loc'] == loc)][['dt', variable]]
+    filtered_data['hour'] = filtered_data['dt'].dt.hour
 
     filtered_data = data[(data['loc'] == loc)][['dt', variable]]
     filtered_data['hour'] = filtered_data['dt'].dt.hour
@@ -192,6 +233,8 @@ def distribucion(data, variable, loc):
 
 def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
     """
+    Función Gráficad2.
+
     Genera y guarda gráficas 2D para varias funciones
     muestra del proceso M(t) en un rango de fechas dado.
 
@@ -213,7 +256,6 @@ def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
     -------
     None
     """
-
     # Crear el directorio si no existe
     if not os.path.exists(carpeta):
         os.makedirs(carpeta)
@@ -247,6 +289,8 @@ def grafica2d(data, variable, loc, lista_fechas, carpeta='graficas2d'):
 
 def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
     """
+    Función Grafica3d.
+
     Genera y guarda una gráfica tridimensional con los modelos de las
     distribuciones de probabilidad de cada hora del día para un contaminante
     y sensor específicos.
@@ -307,6 +351,8 @@ def grafica3d(data, variable, loc, inicio, fin, carpeta='graficas3d'):
 
 def autocorrelacion(data, variable, t1, t2):
     """
+    Función autocorrelación.
+
     Calcula la autocorrelación para dos horas específicas t1 y t2 dentro
     de la secuencia aleatoria M(t).
 
@@ -328,7 +374,6 @@ def autocorrelacion(data, variable, t1, t2):
         Valor de la autocorrelación entre t1 y t2, o NaN si no hay suficientes
         datos para calcular.
     """
-
     # Filtrar los datos por las dos horas específicas
     data_t1 = data[data.index.hour == t1][variable]
     data_t2 = data[data.index.hour == t2][variable]
@@ -353,6 +398,8 @@ def autocorrelacion(data, variable, t1, t2):
 
 def autocovarianza(data, variable, t1, t2):
     """
+    Función autocovarianza.
+
     Calcula la autocovarianza para dos horas específicas t1 y t2
     dentro de la secuencia aleatoria M(t).
 
@@ -374,7 +421,6 @@ def autocovarianza(data, variable, t1, t2):
         Valor de la autocovarianza entre t1 y t2, o NaN si no hay suficientes
         datos para calcular.
     """
-
     # Filtrar los datos por las dos horas específicas
     data_t1 = data[data.index.hour == t1][variable]
     data_t2 = data[data.index.hour == t2][variable]
@@ -401,6 +447,8 @@ def autocovarianza(data, variable, t1, t2):
 
 def wss(data, variable, datetime_col, threshold=0.05):
     """
+    Función wss.
+
     Determina si la secuencia aleatoria M(t) es estacionaria en sentido amplio,
     considerando un umbral de variación aceptable en media y
     autocorrelación/autocovarianza.
@@ -423,7 +471,6 @@ def wss(data, variable, datetime_col, threshold=0.05):
         True si la secuencia es estacionaria en sentido amplio, False en caso
         contrario.
     """
-
     # Convertir 'dt' a datetime y establecerlo como índice.
     if not pd.api.types.is_datetime64_any_dtype(data.index):
         data[datetime_col] = pd.to_datetime(data[datetime_col])
@@ -460,6 +507,8 @@ def wss(data, variable, datetime_col, threshold=0.05):
 
 def prom_temporal(data, variable, inicio=None, fin=None):
     """
+    Función prom_temporal.
+
     Calcula la media temporal A[m(t)] para una función muestra m(t)
     de la secuencia aleatoria M(t) en un intervalo de tiempo seleccionado.
 
@@ -499,6 +548,8 @@ def prom_temporal(data, variable, inicio=None, fin=None):
 
 def ergodicidad(data, variable, margen_tolerancia=0.05):
     """
+    Función ergodicidad.
+
     Determina si la secuencia aleatoria M(t) es ergódica,
     considerando un margen de tolerancia para la comparación
     de medias temporales y del conjunto.
@@ -531,46 +582,3 @@ def ergodicidad(data, variable, margen_tolerancia=0.05):
     )
 
     return es_ergodica
-
-
-# Carga el DataFrame
-data = pd.read_csv('seoul.csv')
-
-# Ejemplo de uso de la función muestra:
-muestra_ejemplo = muestra(data, 'o3', 113, 2020031400, 2020031723)
-print(muestra_ejemplo.head())
-
-# Ejemplo de uso de la función proceso:
-proceso_ejemplo = proceso(data, 'o3', 113, 20200314, 20200317)
-# Imprimir los días para los que se han extraído funciones muestra.
-print(list(proceso_ejemplo.keys()))
-lista_fechas = [['2020031400', '2020031423'], ['2020031500', '2020031523']]
-grafica2d(data, 'o3', 113, lista_fechas, 'graficas2d')
-grafica3d(data, 'o3', 113, '2020031400', '2020031723')
-# Ejemplo de uso de la función:
-distribucion(data, 'o3', 113)
-
-# Prepara el DataFrame
-data['dt'] = pd.to_datetime(data['dt'], format='%Y%m%d%H')
-data.set_index('dt', inplace=True)
-
-# Ahora puedes llamar a las funciones
-autocorr_value = autocorrelacion(data, 'o3', 9, 17)
-print(f"Autocorrelación entre las horas 9 y 17: {autocorr_value}")
-
-autocovarianza_val = autocovarianza(data, 'o3', 9, 17)
-print(f"Autocovarianza entre las 9 y las 17: {autocovarianza_val}")
-
-
-promedio = prom_temporal(data, 'o3', inicio='2020031400', fin='2020031723')
-print(f"El promedio temporal es: {promedio}")
-resultado_ergodicidad = ergodicidad(data, 'o3')
-print(f"La secuencia aleatoria M(t) es ergódica: {resultado_ergodicidad}")
-# Prepara la muestra para wss
-muestra_ejemplo['dt'] = pd.to_datetime(muestra_ejemplo['dt'],
-                                       format='%Y%m%d%H')
-muestra_ejemplo.set_index('dt', inplace=True)
-
-# Llama a la función wss para la muestra
-resultado_wss_muestra = wss(muestra_ejemplo, 'o3', 'dt')
-print(f"La muestra es estacionaria en sentido amplio: {resultado_wss_muestra}")
