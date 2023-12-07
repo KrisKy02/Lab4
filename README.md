@@ -233,12 +233,3 @@ Este enfoque permite comprender cómo dos puntos en el tiempo de una serie tempo
 #### Aplicación en Análisis Ambiental
 - Importante para determinar si las características de un contaminante son consistentes a lo largo del tiempo y si los datos son representativos de la serie temporal completa.
 
-
-## Ejemplos de Uso
-Aquí se muestra cómo utilizar cada una de las funciones principales del proyecto:
-
-### Uso de `distribucion`
-```python
-# Ejemplo de uso de la función distribucion
-resultado_distribucion = distribucion(data, 'o3', 113)
-```
