@@ -26,6 +26,12 @@ El módulo fue diseñado para ser utilizado en el contexto de monitoreo y
 análisis ambiental, proporcionando herramientas para el procesamiento y
 análisis detallado de datos de calidad del aire y otros contaminantes
 ambientales.
+
+Estudiantes:
+
+Kristel Herrera Rodríguez C13769
+Oscar Porras Silesky C16042
+Fabrizzio Herrera Calvo B83849
 """
 
 
