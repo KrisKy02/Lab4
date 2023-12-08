@@ -39,13 +39,10 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
 from numpy.polynomial.polynomial import Polynomial
 import scipy.stats as st
 import seaborn as sns
-import matplotlib.pyplot as plt
 from datetime import datetime
-from mpl_toolkits.mplot3d import Axes3D
 
 
 def muestra(data, variable, loc, inicio, fin):
@@ -160,7 +157,6 @@ def distribucion(data, variable, loc):
     filtered_data['hour'] = filtered_data['dt'].dt.hour
 
     parametros_globales = {}
-    histogramas = {}
     mejor_distribucion_global = {}
 
     # Función interna para comparar distribuciones
