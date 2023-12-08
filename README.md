@@ -22,11 +22,11 @@ Este código requiere las siguientes bibliotecas:
 - Seaborn
 
 ## Instalación y Ejecución
-Para instalar las dependencias, ejecuta el siguiente comando:
+Para instalar las dependencias, se ejecuta el siguiente comando:
 ```bash
 pip install pandas numpy scipy matplotlib seaborn
 ```
-Para ejecutar el análisis, primero importa las funciones desde `proceso.py` y luego utiliza cada función con los datos apropiados.
+Para ejecutar el análisis, primero se importa las funciones desde `proceso.py` y luego se utiliza cada función con los datos apropiados.
 
 ## Documentación Teórica
 Las funciones implementadas en este proyecto se basan en la teoría estadística y matemática para el análisis de series temporales y datos ambientales. Se utilizan métodos como ajustes de distribución, cálculos de medias y análisis de ergodicidad para interpretar los datos de contaminantes.
@@ -46,10 +46,8 @@ Las funciones implementadas en este proyecto se basan en la teoría estadística
 - `data`: El conjunto completo de datos, que incluye mediciones de varios contaminantes en diferentes momentos y ubicaciones.
 - `variable`: El contaminante específico que se desea analizar.
 - `loc`: Identificador del sensor, crucial para estudiar diferencias en mediciones basadas en la ubicación.
-- `inicio` y `fin`: Definen el intervalo de tiempo para el cual queremos extraer las mediciones, permitiendo estudios enfocados en períodos específicos.
+- `inicio` y `fin`: Definen el intervalo de tiempo para el cual se quiere extraer las mediciones, permitiendo estudios enfocados en períodos específicos.
 
-#### Aplicación Práctica
-- Esta función es útil para investigadores y analistas que necesitan enfocarse en un conjunto específico de datos dentro de un marco temporal y espacial determinado, como analizar los cambios en los niveles de un contaminante en una ubicación específica durante un periodo concreto.
 ## Función `proceso`
 
 ### Teoría detrás de la Función `proceso`
@@ -69,8 +67,6 @@ Las funciones implementadas en este proyecto se basan en la teoría estadística
 #### Indexación por Intervalo Diario
 - La función genera un diccionario donde cada clave es una fecha específica y cada valor es un DataFrame con mediciones para ese día, permitiendo un análisis detallado y comparativo.
 
-#### Aplicación Práctica
-- Ideal para investigadores interesados en analizar patrones temporales en los datos de contaminación, como cambios diarios o identificación de eventos de contaminación específicos.
 
 ## Función `distribucion`
 
